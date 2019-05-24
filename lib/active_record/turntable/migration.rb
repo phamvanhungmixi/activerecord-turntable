@@ -1,35 +1,13 @@
 # -*- coding: utf-8 -*-
 module ActiveRecord::Turntable::Migration
   extend ActiveSupport::Concern
-  # AR < 3.1
-  module ClassMethods
-    @@current_shard = nil
-  end
 
-  def self.extended(base)
-    class << base
-      def announce_with_turntable(message)
-        announce_without_turntable("#{message} - #{get_current_shard}")
-      end
-
-      alias_method_chain :migrate, :turntable
-      alias_method_chain :announce, :turntable
-      include ShardDefinition
-    end
-    base.class_eval do
-      class_inheritable_accessor :target_shards
-      class_inheritable_accessor :target_seqs
-    end
-    ::ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:include, SchemaStatementsExt)
-  end
-
-  # AR >= 3.1
   included do
     extend ShardDefinition
-    class_attribute :target_shards
-    class_attribute :target_seqs
+    class_attribute :target_shards, :target_seqs, :current_shard
+
     def announce_with_turntable(message)
-      announce_without_turntable("#{message} - #{get_current_shard}")
+      announce_without_turntable("#{message} - Shard: #{current_shard}")
     end
 
     alias_method_chain :migrate, :turntable
@@ -60,13 +38,9 @@ module ActiveRecord::Turntable::Migration
     end
   end
 
-  def get_current_shard
-    "Shard: #{@@current_shard}" if @@current_shard
-  end
-
   def migrate_with_turntable(direction)
     config = ActiveRecord::Base.configurations
-    @@current_shard = nil
+    self.class.current_shard = nil
     if self.class.target_shards.blank? || self.class.target_seqs.blank?
       return migrate_without_turntable(direction)
     end
@@ -83,7 +57,7 @@ module ActiveRecord::Turntable::Migration
     # SHOW FULL FIELDS FROM `users` を実行してテーブルの情報を取得するためにデフォルトのデータベースも追加する
     shards_conf << config[ActiveRecord::Turntable::RackupFramework.env||"development"]
     shards_conf.each_with_index do |conf, idx|
-      @@current_shard = (shards[idx] || seqs_conf.keys[idx - shards.size] || "master")
+      self.class.current_shard = (shards[idx] || seqs_conf.keys[idx - shards.size] || "master")
       ActiveRecord::Base.establish_connection(conf)
       if !ActiveRecord::Base.connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
         ActiveRecord::Base.connection.initialize_schema_migrations_table
