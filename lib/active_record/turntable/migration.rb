@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 module ActiveRecord::Turntable::Migration
   extend ActiveSupport::Concern
-
   # AR < 3.1
+  module ClassMethods
+    @@current_shard = nil
+  end
+
   def self.extended(base)
     class << base
       def announce_with_turntable(message)
