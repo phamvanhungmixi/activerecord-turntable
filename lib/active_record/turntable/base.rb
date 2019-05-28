@@ -41,6 +41,36 @@ module ActiveRecord::Turntable
         turntable_replace_connection_pool
       end
 
+<<<<<<< HEAD
+=======
+      def force_transaction_all_shards!(options={}, &block)
+        force_connect_all_shards!
+        shards = turntable_connections.values
+        shards += [ActiveRecord::Base.connection_pool]
+        recursive_transaction(shards, options, &block)
+      end
+
+      def recursive_transaction(pools, options, &block)
+        pool = pools.shift
+        if pools.present?
+          pool.connection.transaction(options) do
+            recursive_transaction(pools, options, &block)
+          end
+        else
+          pool.connection.transaction(options, &block)
+        end
+      end
+
+      def force_connect_all_shards!
+        conf = configurations[ActiveRecord::Turntable::RackupFramework.env]
+        shards = conf["shards"]
+        shards = shards.merge(conf["seq"]) if conf["seq"]
+        shards.each do |name, config|
+          turntable_connections[name] ||=
+            ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec_for(config))
+        end
+      end
+>>>>>>> tiepadrino
 
       def turntable_replace_connection_pool
         ch = connection_handler

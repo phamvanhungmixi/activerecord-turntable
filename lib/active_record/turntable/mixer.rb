@@ -48,7 +48,11 @@ module ActiveRecord::Turntable
                            method, query, *args, &block)
       end
     rescue Exception => err
+<<<<<<< HEAD
       logger.warn { "[ActiveRecord::Turntable] Error on Building Fader: #{binded_query}, on_method: #{method_name}" }
+=======
+      logger.warn { "[ActiveRecord::Turntable][BUG] Error on Building Fader: #{binded_query}, on_method: #{method_name}, err: #{err}" }
+>>>>>>> tiepadrino
       raise err
     end
 
@@ -138,6 +142,7 @@ module ActiveRecord::Turntable
         return Fader::SpecifiedShard.new(@proxy,
                                          { @proxy.cluster.shard_for(shard_keys.first) => query },
                                          method, query, *args, &block)
+<<<<<<< HEAD
       elsif SQLTree::Node::SelectDeclaration === tree.select.first and
               tree.select.first.to_sql == '1 AS "one"'  # for `SELECT 1 AS one` (AR::Base.exists?)
         return Fader::SelectShardsMergeResult.new(@proxy,
@@ -146,6 +151,10 @@ module ActiveRecord::Turntable
                                                   )
       elsif tree.group_by or tree.order_by or tree.limit.try(:value).to_i > 0
         raise CannotSpecifyShardError, "cannot specify shard for query: #{tree.to_sql}"
+=======
+      elsif @proxy.current_shard.blank? and (tree.group_by or tree.order_by or tree.limit.try(:value).to_i > 1)
+        raise CannotSpecifyShardError, "cannot specify shard for query: #{query.to_sql}"
+>>>>>>> tiepadrino
       elsif shard_keys.present?
         if SQLTree::Node::SelectDeclaration === tree.select.first and
             SQLTree::Node::CountAggregrate === tree.select.first.expression
@@ -180,7 +189,11 @@ module ActiveRecord::Turntable
                                                     method, query, *args, &block
                                                     )
         else
+<<<<<<< HEAD
           raise CannotSpecifyShardError, "cannot specify shard for query: #{tree.to_sql}"
+=======
+          raise CannotSpecifyShardError, "cannot specify shard for query: #{query.to_sql}"
+>>>>>>> tiepadrino
         end
       end
     end

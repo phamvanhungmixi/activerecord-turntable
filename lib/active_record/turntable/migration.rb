@@ -1,9 +1,20 @@
+# -*- coding: utf-8 -*-
 module ActiveRecord::Turntable::Migration
   extend ActiveSupport::Concern
 
   included do
     extend ShardDefinition
+<<<<<<< HEAD
     class_attribute :target_shards, :current_shard
+=======
+    class_attribute :target_shards, :target_seqs, :current_shard
+
+    def announce_with_turntable(message)
+      announce_without_turntable("#{message} - Shard: #{current_shard}")
+    end
+
+    alias_method_chain :migrate, :turntable
+>>>>>>> tiepadrino
     alias_method_chain :announce, :turntable
     alias_method_chain :exec_migration, :turntable
     ::ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:include, SchemaStatementsExt)
@@ -14,6 +25,7 @@ module ActiveRecord::Turntable::Migration
   module ShardDefinition
     def clusters(*cluster_names)
       config = ActiveRecord::Base.turntable_config
+<<<<<<< HEAD
       (self.target_shards ||= []).concat(
         if cluster_names.first == :all
           config['clusters'].map do |name, cluster_conf|
@@ -27,6 +39,19 @@ module ActiveRecord::Turntable::Migration
           end.flatten
         end
       )
+=======
+      if cluster_names.first == :all
+        config['clusters'].map do |name, cluster_conf|
+          (self.target_shards ||= []) << cluster_conf["shards"].map { |shard| shard["connection"] }
+          (self.target_seqs ||= []) << cluster_conf["seq"]["connection"]
+        end
+      else
+        cluster_names.map do |cluster_name|
+          (self.target_shards ||= []) << config['clusters'][cluster_name]["shards"].map { |shard| shard["connection"] }
+          (self.target_seqs ||= []) << config['clusters'][cluster_name]["seq"]["connection"]
+        end
+      end
+>>>>>>> tiepadrino
     end
 
     def shards(*connection_names)
@@ -34,6 +59,7 @@ module ActiveRecord::Turntable::Migration
     end
   end
 
+<<<<<<< HEAD
   def target_shard?(shard_name)
     target_shards.blank? or target_shards.include?(shard_name)
   end
@@ -44,6 +70,34 @@ module ActiveRecord::Turntable::Migration
 
   def exec_migration_with_turntable(*args)
     exec_migration_without_turntable(*args) if target_shard?(current_shard)
+=======
+  def migrate_with_turntable(direction)
+    config = ActiveRecord::Base.configurations
+    self.class.current_shard = nil
+    if self.class.target_shards.blank? || self.class.target_seqs.blank?
+      return migrate_without_turntable(direction)
+    end
+
+    shards = (self.class.target_shards||=[]).flatten.uniq.compact
+    shards_conf = shards.map do |shard|
+      config[ActiveRecord::Turntable::RackupFramework.env||"development"]["shards"][shard]
+    end
+
+    seqs = (self.class.target_seqs||=[]).flatten.uniq.compact
+    seqs_conf = config[ActiveRecord::Turntable::RackupFramework.env||"development"]["seq"].select { |key, val| seqs.include?(key) }
+    shards_conf += seqs_conf.values
+
+    # SHOW FULL FIELDS FROM `users` を実行してテーブルの情報を取得するためにデフォルトのデータベースも追加する
+    shards_conf << config[ActiveRecord::Turntable::RackupFramework.env||"development"]
+    shards_conf.each_with_index do |conf, idx|
+      self.class.current_shard = (shards[idx] || seqs_conf.keys[idx - shards.size] || "master")
+      ActiveRecord::Base.establish_connection(conf)
+      if !ActiveRecord::Base.connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
+        ActiveRecord::Base.connection.initialize_schema_migrations_table
+      end
+      migrate_without_turntable(direction)
+    end
+>>>>>>> tiepadrino
   end
 
   module SchemaStatementsExt

@@ -23,9 +23,15 @@ module ActiveRecord::Turntable
     @@tables = {}
     cattr_reader :sequences, :tables
 
+<<<<<<< HEAD
     def self.build(klass, sequence_name = nil, cluster_name = nil)
       sequence_name ||= current_cluster_config_for(cluster_name || klass)["seq"].keys.first
       seq_config = current_cluster_config_for(cluster_name || klass)["seq"][sequence_name]
+=======
+    def self.build(klass)
+      seq_config_name = ActiveRecord::Base.turntable_config["clusters"][klass.turntable_cluster_name.to_s]["seq"]["connection"]
+      seq_config = ActiveRecord::Base.configurations[ActiveRecord::Turntable::RackupFramework.env]["seq"][seq_config_name]
+>>>>>>> tiepadrino
       seq_type = (seq_config["seq_type"] ? seq_config["seq_type"].to_sym : :mysql)
       @@tables[klass.table_name] ||= (@@sequences[sequence_name(klass.table_name, klass.primary_key)] ||= @@sequence_types[seq_type].new(klass, seq_config))
     end
