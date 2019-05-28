@@ -77,7 +77,6 @@ module ActiveRecord::Turntable::Migration
       end
       migrate_without_turntable(direction)
     end
->>>>>>> tiepadrino
   end
 
   module SchemaStatementsExt
