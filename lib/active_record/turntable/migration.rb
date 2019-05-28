@@ -4,17 +4,13 @@ module ActiveRecord::Turntable::Migration
 
   included do
     extend ShardDefinition
-<<<<<<< HEAD
-    class_attribute :target_shards, :current_shard
-=======
-    class_attribute :target_shards, :target_seqs, :current_shard
+    class_attribute :target_shards, :current_shard, :target_seqs
 
     def announce_with_turntable(message)
       announce_without_turntable("#{message} - Shard: #{current_shard}")
     end
 
     alias_method_chain :migrate, :turntable
->>>>>>> tiepadrino
     alias_method_chain :announce, :turntable
     alias_method_chain :exec_migration, :turntable
     ::ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:include, SchemaStatementsExt)
@@ -25,21 +21,6 @@ module ActiveRecord::Turntable::Migration
   module ShardDefinition
     def clusters(*cluster_names)
       config = ActiveRecord::Base.turntable_config
-<<<<<<< HEAD
-      (self.target_shards ||= []).concat(
-        if cluster_names.first == :all
-          config['clusters'].map do |name, cluster_conf|
-            cluster_conf["shards"].map {|shard| shard["connection"]}
-          end
-        else
-          cluster_names.map do |cluster_name|
-            config['clusters'][cluster_name]["shards"].map do |shard|
-              shard["connection"]
-            end
-          end.flatten
-        end
-      )
-=======
       if cluster_names.first == :all
         config['clusters'].map do |name, cluster_conf|
           (self.target_shards ||= []) << cluster_conf["shards"].map { |shard| shard["connection"] }
@@ -51,7 +32,6 @@ module ActiveRecord::Turntable::Migration
           (self.target_seqs ||= []) << config['clusters'][cluster_name]["seq"]["connection"]
         end
       end
->>>>>>> tiepadrino
     end
 
     def shards(*connection_names)
@@ -59,7 +39,6 @@ module ActiveRecord::Turntable::Migration
     end
   end
 
-<<<<<<< HEAD
   def target_shard?(shard_name)
     target_shards.blank? or target_shards.include?(shard_name)
   end
@@ -70,7 +49,8 @@ module ActiveRecord::Turntable::Migration
 
   def exec_migration_with_turntable(*args)
     exec_migration_without_turntable(*args) if target_shard?(current_shard)
-=======
+  end
+
   def migrate_with_turntable(direction)
     config = ActiveRecord::Base.configurations
     self.class.current_shard = nil

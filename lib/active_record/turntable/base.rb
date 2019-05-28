@@ -41,8 +41,6 @@ module ActiveRecord::Turntable
         turntable_replace_connection_pool
       end
 
-<<<<<<< HEAD
-=======
       def force_transaction_all_shards!(options={}, &block)
         force_connect_all_shards!
         shards = turntable_connections.values
@@ -70,7 +68,6 @@ module ActiveRecord::Turntable
             ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec_for(config))
         end
       end
->>>>>>> tiepadrino
 
       def turntable_replace_connection_pool
         ch = connection_handler

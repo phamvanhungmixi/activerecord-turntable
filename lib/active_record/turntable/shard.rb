@@ -26,7 +26,6 @@ module ActiveRecord::Turntable
 
     private
 
-<<<<<<< HEAD
     def connection_klass
       @connection_klass ||= create_connection_class
     end
@@ -42,26 +41,6 @@ module ActiveRecord::Turntable
       klass.remove_connection
       klass.establish_connection ActiveRecord::Base.connection_pool.spec.config[:shards][name].with_indifferent_access
       klass
-=======
-    def retrieve_connection_pool
-      ActiveRecord::Base.turntable_connections[name] ||=
-        begin
-          config = ActiveRecord::Base.configurations[ActiveRecord::Turntable::RackupFramework.env]["shards"][name]
-          raise ArgumentError, "Unknown database config: #{name}, have #{ActiveRecord::Base.configurations.inspect}" unless config
-          ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec_for(config))
-        end
-    end
-
-    def spec_for(config)
-      begin
-        adapter = config['adapter'] || config[:adapter]
-        require "active_record/connection_adapters/#{adapter}_adapter"
-      rescue LoadError => e
-        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{e})"
-      end
-      adapter_method = "#{adapter}_connection"
-      ActiveRecord::Base::ConnectionSpecification.new(config, adapter_method)
->>>>>>> tiepadrino
     end
   end
 end
