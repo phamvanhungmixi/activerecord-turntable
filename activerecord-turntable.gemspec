@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "barrage"
   spec.add_development_dependency "mysql2"
 
-  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rake", "< 11.0"
   spec.add_development_dependency "rack"
   spec.add_development_dependency "rspec", "~> 3.1.0"
   spec.add_development_dependency "rspec-its"
