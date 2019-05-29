@@ -19,7 +19,6 @@ module ActiveRecord::Turntable
         payload = event.payload
 
         return if ActiveRecord::LogSubscriber::IGNORE_PAYLOAD_NAMES.include?(payload[:name])
-        name    = '%s (%.1fms)' % [payload[:name], event.duration]
 
         name  = "#{payload[:name]} (#{event.duration.round(1)}ms)"
         connection = if event.payload[:turntable_shard_name]
@@ -40,11 +39,11 @@ module ActiveRecord::Turntable
 
         if odd?
           name = color(name, ActiveRecord::LogSubscriber::CYAN, true)
-          connection = color(shard, ActiveRecord::LogSubscriber::CYAN, true)
+          connection = color(connection, ActiveRecord::LogSubscriber::CYAN, true)
           sql = color(sql, nil, true)
         else
           name = color(name, ActiveRecord::LogSubscriber::MAGENTA, true)
-          connection = color(shard, ActiveRecord::LogSubscriber::MAGENTA, true)
+          connection = color(connection, ActiveRecord::LogSubscriber::MAGENTA, true)
         end
 
         debug "  #{name} #{connection} #{sql}#{binds}"
