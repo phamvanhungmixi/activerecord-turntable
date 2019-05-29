@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-require 'pry'
+require 'active_record_ext/database_tasks'
 module ActiveRecord::Turntable::Migration
   extend ActiveSupport::Concern
 
