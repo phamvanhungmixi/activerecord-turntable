@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+require 'pry'
 module ActiveRecord::Turntable::Migration
   extend ActiveSupport::Concern
 
@@ -21,14 +22,15 @@ module ActiveRecord::Turntable::Migration
   module ShardDefinition
     def clusters(*cluster_names)
       config = ActiveRecord::Base.turntable_config
+
       if cluster_names.first == :all
         config['clusters'].map do |name, cluster_conf|
-          (self.target_shards ||= []) << cluster_conf["shards"].map { |shard| shard["connection"] }
+          (self.target_shards ||= []).concat(cluster_conf["shards"].map { |shard| shard["connection"] }.flatten)
           (self.target_seqs ||= []) << cluster_conf["seq"]["connection"]
         end
       else
         cluster_names.map do |cluster_name|
-          (self.target_shards ||= []) << config['clusters'][cluster_name]["shards"].map { |shard| shard["connection"] }
+          (self.target_shards ||= []).concat(config['clusters'][cluster_name]["shards"].map { |shard| shard["connection"] }.flatten)
           (self.target_seqs ||= []) << config['clusters'][cluster_name]["seq"]["connection"]
         end
       end
