@@ -40,7 +40,7 @@ module ActiveRecord
           yield(name, configuration)
         end
         ActiveRecord::Base.clear_active_connections!
-        ActiveRecord::Base.establish_connection environment.to_sym
+        ActiveRecord::Base.establish_connection ActiveRecord::Base.configurations[environment.to_sym]
       end
 
       def each_current_turntable_cluster_configuration(with_test = false, environment = env)
